@@ -112,6 +112,7 @@ namespace DotNetNuke.Entities
             foreach (var handler in EventHandlersContainer<IUserEventHandlers>.Instance.EventHandlers)
             {
                 this.UserAuthenticated += handler.Value.UserAuthenticated;
+                this.UserUnauthenticated += handler.Value.UserUnauthenticated;
                 this.UserCreated += handler.Value.UserCreated;
                 this.UserDeleted += handler.Value.UserDeleted;
                 this.UserRemoved += handler.Value.UserRemoved;
@@ -197,6 +198,8 @@ namespace DotNetNuke.Entities
         private event EventHandler<UserEventArgs> UserApproved;
 
         private event EventHandler<UserEventArgs> UserAuthenticated;
+
+        private event EventHandler<UserEventArgs> UserUnauthenticated;
 
         private event EventHandler<UserEventArgs> UserCreated;
 
@@ -570,6 +573,15 @@ namespace DotNetNuke.Entities
             if (this.UserAuthenticated != null)
             {
                 this.UserAuthenticated(this, args);
+            }
+        }
+
+        /// <inheritdoc/>
+        public virtual void OnUserUnauthenticated(UserEventArgs args)
+        {
+            if (this.UserUnauthenticated != null)
+            {
+                this.UserUnauthenticated(this, args);
             }
         }
 

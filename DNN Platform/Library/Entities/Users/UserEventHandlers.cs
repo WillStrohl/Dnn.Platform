@@ -19,6 +19,11 @@ namespace DotNetNuke.Entities.Users
         }
 
         /// <inheritdoc/>
+        public void UserUnauthenticated(object sender, UserEventArgs args)
+        {
+        }
+
+        /// <inheritdoc/>
         public void UserCreated(object sender, UserEventArgs args)
         {
             UserRegistrationEmailNotifier.NotifyAdministrator(args.User);

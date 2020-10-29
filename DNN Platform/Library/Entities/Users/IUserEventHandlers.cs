@@ -8,6 +8,8 @@ namespace DotNetNuke.Entities.Users
     {
         void UserAuthenticated(object sender, UserEventArgs args);
 
+        void UserUnauthenticated(object sender, UserEventArgs args);
+
         void UserCreated(object sender, UserEventArgs args);
 
         void UserDeleted(object sender, UserEventArgs args);

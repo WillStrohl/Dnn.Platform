@@ -1,6 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information
+
+using DotNetNuke.Entities.Users;
+
 namespace DotNetNuke.Modules.Admin.Authentication
 {
     using System;
@@ -21,6 +24,12 @@ namespace DotNetNuke.Modules.Admin.Authentication
     /// </remarks>
     public partial class Logoff : UserModuleBase
     {
+        private string currentUserAuthSystem = "DNN";
+
+        public delegate void UserUnauthenticatedEventHandler(object sender, UserUnauthenticatedEventArgs e);
+
+        public event UserUnauthenticatedEventHandler UserUnauthenticated;
+
         /// <summary>
         /// Page_Load runs when the control is loaded.
         /// </summary>
@@ -36,6 +45,7 @@ namespace DotNetNuke.Modules.Admin.Authentication
 
                 if (authSystem != null && !string.IsNullOrEmpty(authSystem.LogoffControlSrc))
                 {
+                    currentUserAuthSystem = authSystem.AuthenticationType;
                     var authLogoffControl = (AuthenticationLogoffBase)this.LoadControl("~/" + authSystem.LogoffControlSrc);
 
                     // set the control ID to the resource file name ( ie. controlname.ascx = controlname )
@@ -89,18 +99,37 @@ namespace DotNetNuke.Modules.Admin.Authentication
         {
             try
             {
+                var user = this.User;
+                var message = "UserIsInvalid";
+
                 // Remove user from cache
                 if (this.User != null)
                 {
+                    message = "UserIsValid";
                     DataCache.ClearUserCache(this.PortalSettings.PortalId, this.Context.User.Identity.Name);
                 }
 
                 var objPortalSecurity = PortalSecurity.Instance;
                 objPortalSecurity.SignOut();
+
+                // Raise UserUnauthenticated Event
+                var eventArgs = new UserUnauthenticatedEventArgs(user, this.currentUserAuthSystem)
+                {
+                    Message = message
+                };
+                this.OnUserUnauthenticated(eventArgs);
             }
             catch (Exception exc)   // Page failed to load
             {
                 Exceptions.ProcessPageLoadException(exc);
+            }
+        }
+
+        protected virtual void OnUserUnauthenticated(UserUnauthenticatedEventArgs ea)
+        {
+            if (this.UserUnauthenticated != null)
+            {
+                this.UserUnauthenticated(null, ea);
             }
         }
     }
